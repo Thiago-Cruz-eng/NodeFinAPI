@@ -5,7 +5,7 @@ const app = express();
 
 app.use(express.json())
 
-const costumers = [];
+const customers = [];
 
 
 /* metodos
@@ -18,12 +18,18 @@ statement []
 app.post('/account', (req, res) => {
   const {cpf, name} = req.body;
 
-  const id = uuidv4();
+  const customerExists = customers.some(
+    (customer) => customer.cpf === cpf
+  );
 
-  costumers.push({
+  if(customerExists) {
+    return res.status(400).json({error: "Customer had been created!"})
+  }
+
+  customers.push({
     cpf,
     name,
-    id,
+    id: uuidv4(),
     statement: []
   });
   return res.status(201).send();
