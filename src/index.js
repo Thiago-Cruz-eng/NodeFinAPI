@@ -8,7 +8,7 @@ app.use(express.json())
 const customers = [];
 
 //middleware for verify cpf to not read myself many times in the functions
-function verifyExistsAcoountCPF(req, res, next) {
+function verifyExistsAccountCPF(req, res, next) {
 //take a cpf from my url, like params and with this using by destructuring
   const {cpf} = req.headers;
 //find != some - some is true or false, finda return all data if find
@@ -20,7 +20,7 @@ function verifyExistsAcoountCPF(req, res, next) {
 
   req.customer = customer;
   return next();
-}
+};
 
 function getBalance(statement) {
   const balance = statement.reduce((acc, operation) => {
@@ -32,7 +32,7 @@ function getBalance(statement) {
   }, 0);
 
   return balance
-}
+};
 
 app.post('/account', (req, res) => {
   const {cpf, name} = req.body;
@@ -54,14 +54,14 @@ app.post('/account', (req, res) => {
   return res.status(201).send();
 });
 
-app.get("/statement", verifyExistsAcoountCPF, (req, res) => {
+app.get("/statement", verifyExistsAccountCPF, (req, res) => {
 //take-destructuring customer of my req in middleware
   const {customer} = req;
 //here is like, I wil take my client, all of data, but I only will response with statement
   return res.json(customer.statement);
 });
 
-app.post('/deposit', verifyExistsAcoountCPF, (req, res) => {
+app.post('/deposit', verifyExistsAccountCPF, (req, res) => {
   //here, this information is not available in my account, then I need to declare it
   //but not in my original array or in my post method in push, I only can declare a object and push this to my array
   const { description, amount } = req.body;
@@ -80,7 +80,7 @@ app.post('/deposit', verifyExistsAcoountCPF, (req, res) => {
   return res.status(201).send();
 });
 
-app.post("/withdraw", verifyExistsAcoountCPF, (req, res) => {
+app.post("/withdraw", verifyExistsAccountCPF, (req, res) => {
   const {amount} = req.body;
   const {customer} = req;
 
@@ -99,9 +99,9 @@ app.post("/withdraw", verifyExistsAcoountCPF, (req, res) => {
   customer.statement.push(statementOperation);
 
   return res.status(201).send();
-})
+});
 
-app.get("/statement/date", verifyExistsAcoountCPF, (req, res) => {
+app.get("/statement/date", verifyExistsAccountCPF, (req, res) => {
   //take-destructuring customer of my req in middleware
     const {customer} = req;
     const {date} = req.query;
@@ -116,9 +116,9 @@ app.get("/statement/date", verifyExistsAcoountCPF, (req, res) => {
 
   //here is like, I wil take my client, all of data, but I only will response with statement
     return res.json(statement);
-  });
+});
 
-app.put("/account", verifyExistsAcoountCPF, (req, res) => {
+app.put("/account", verifyExistsAccountCPF, (req, res) => {
   const {name} = req.body;
   const {customer} = req;
 
@@ -127,10 +127,24 @@ app.put("/account", verifyExistsAcoountCPF, (req, res) => {
   return res.status(201).send();
 });
 
-app.get("/account", verifyExistsAcoountCPF, (req, res) => {
+app.get("/account", verifyExistsAccountCPF, (req, res) => {
   const {customer} = req;
 
   return res.json(customer);
-})
+});
+
+app.delete("/account", verifyExistsAccountCPF, (req, res) => {
+  const {customer} = req;
+  customers.splice(customer, 1);
+  return res.status(200).json(customers);
+});
+
+app.get("/balance", verifyExistsAccountCPF, (req, res) => {
+  const {customer} = req;
+
+  const balance = getBalance(customer.statement);
+
+  return res.json(balance);
+});
 
 app.listen(3333);
