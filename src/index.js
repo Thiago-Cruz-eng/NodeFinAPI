@@ -22,6 +22,18 @@ function verifyExistsAcoountCPF(req, res, next) {
   return next();
 }
 
+function getBalance(statement) {
+  const balance = statement.reduce((acc, operation) => {
+    if(operation.type === 'credit') {
+      return acc + operation.amount;
+    } else {
+      return acc - operation.amount;
+    }
+  }, 0);
+
+  return balance
+}
+
 app.post('/account', (req, res) => {
   const {cpf, name} = req.body;
 
@@ -105,5 +117,20 @@ app.get("/statement/date", verifyExistsAcoountCPF, (req, res) => {
   //here is like, I wil take my client, all of data, but I only will response with statement
     return res.json(statement);
   });
+
+app.put("/account", verifyExistsAcoountCPF, (req, res) => {
+  const {name} = req.body;
+  const {customer} = req;
+
+  customer.name = name;
+
+  return res.status(201).send();
+});
+
+app.get("/account", verifyExistsAcoountCPF, (req, res) => {
+  const {customer} = req;
+
+  return res.json(customer);
+})
 
 app.listen(3333);
