@@ -49,4 +49,23 @@ app.get("/statement", verifyExistsAcoountCPF, (req, res) => {
   return res.json(customer.statement);
 });
 
+app.post('/deposit', verifyExistsAcoountCPF, (req, res) => {
+  //here, this information is not available in my account, then I need to declare it
+  //but not in my original array or in my post method in push, I only can declare a object and push this to my array
+  const { description, amount } = req.body;
+  //take my customer from my midde (alredy verify if its validy)
+  const { customer } = req;
+  //show to my method what to do with this
+  const statementOperation = { 
+    description,
+    amount,
+    created_at: new Date(),
+    type: 'credit'
+  };
+  //input into my array in another array alredy created and waiting to be fill
+  customer.statement.push(statementOperation);
+
+  return res.status(201).send();
+});
+
 app.listen(3333);
