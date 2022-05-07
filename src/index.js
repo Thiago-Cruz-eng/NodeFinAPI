@@ -68,4 +68,42 @@ app.post('/deposit', verifyExistsAcoountCPF, (req, res) => {
   return res.status(201).send();
 });
 
+app.post("/withdraw", verifyExistsAcoountCPF, (req, res) => {
+  const {amount} = req.body;
+  const {customer} = req;
+
+  const balance = getBalance(customer.statement);
+
+  if(balance < amount) {
+    return res.status(400).json({error: "insuficient funds!"})
+  }
+
+  const statementOperation = {
+    amount,
+    created_at: new Date(),
+    type: 'debit'
+  }
+
+  customer.statement.push(statementOperation);
+
+  return res.status(201).send();
+})
+
+app.get("/statement/date", verifyExistsAcoountCPF, (req, res) => {
+  //take-destructuring customer of my req in middleware
+    const {customer} = req;
+    const {date} = req.query;
+
+    const dateFormat = new Date(date + " 00:00")
+
+    const statement = customer.statement.filter(
+      (statement) => 
+      statement.created_at.toDateString() ===
+      new Date(dateFormat).toDateString()
+    );
+
+  //here is like, I wil take my client, all of data, but I only will response with statement
+    return res.json(statement);
+  });
+
 app.listen(3333);
